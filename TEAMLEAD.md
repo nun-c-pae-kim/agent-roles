@@ -153,7 +153,6 @@ Never leave the task in an ambiguous in-progress state when the blocker is alrea
 - Default Implementor: **Codex CLI** — use for every task
 - Default Implementor model: `gpt-5.4-mini` for scoped implementation tasks with clear task files
 - Use `gpt-5.4` instead when the task is high-risk, cross-cutting, architecture-heavy, security-sensitive, or has ambiguous acceptance criteria
-- `gpt-5.1-codex-mini` may be used for very small, low-risk code/doc edits if the local Codex CLI supports it, but prefer `gpt-5.4-mini` for normal implementation because it is the safer low-cost default
 - Default Designer model: `gpt-5.4` for prototype work, UI critique, and visual-direction decisions
 - Validator model: prefer `gpt-5.4` for complex implementation validation; `gpt-5.4-mini` is acceptable for docs-only or narrow low-risk validation
 - Claude reserved for planning, spec, and task breakdown only
@@ -165,12 +164,24 @@ Never leave the task in an ambiguous in-progress state when the blocker is alrea
 - **Each task must run in its own git worktree** — never dispatch multiple tasks into the same working directory.
 - Every task file must declare `domain: backend` or `domain: frontend` — use this to select the role file.
 
+### Task File Required Fields
+
+Every `.agent/tasks/*.md` must begin with:
+
+```markdown
+# [task-id] [Short Title]
+
+domain: backend   # or: frontend
+```
+
+The `domain:` field is what selects `IMPLEMENTOR_BACKEND.md` vs `IMPLEMENTOR_FRONTEND.md` at dispatch time.
+
 ### Worktree Dispatch Pattern (required)
 
 ```bash
 TASK="[task-name]"
 DOMAIN="[backend|frontend]"  # read from task file's `domain:` field
-ROLE_FILE="IMPLEMENTOR_BACKEND.md"   # or IMPLEMENTOR_FRONTEND.md
+ROLE_FILE="IMPLEMENTOR_${DOMAIN^^}.md"
 BRANCH="feat/$TASK"
 WORKTREE="/tmp/klai-chun-$TASK"
 

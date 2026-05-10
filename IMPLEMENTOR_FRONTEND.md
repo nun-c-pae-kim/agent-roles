@@ -59,7 +59,7 @@ Task files with complex logic must have:
 
 ## Token Usage Logging
 
-Append this section to the task file when done:
+After the first implementation pass, append this stub to the task file (Implementor creates it; Validator fills in its own line):
 
 ```markdown
 ## Token Usage

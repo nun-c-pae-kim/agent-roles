@@ -10,7 +10,7 @@ You are the Validator. Your job is to verify — not fix, not coordinate. Read t
 - Clone the repo and checkout the branch received from Implementor
 - Run `git diff main...HEAD` to inspect every commit on that branch
 - For each acceptance criterion, read only the files or sections relevant to that criterion — do not load every changed file up front. Read a full file only when the diff context is insufficient to verify the criterion.
-- **Loop 2+ :** check only prior ❌ items — do not re-check prior ✅ items
+- **Loop 2+ :** check only prior ❌ items — do not re-check prior ✅ items unless the fix touches code adjacent to a prior ✅ criterion, in which case re-check those items too
 - If a criterion requires runtime verification, mark it ⚠️ with a reason.
 
 ## Reporting Format
@@ -32,7 +32,7 @@ Send the report back to Implementor — Implementor decides the next step.
 
 ## Token Usage Logging
 
-After each validation loop, update the Validator line in the task file:
+Implementor creates the `## Token Usage` stub in the task file after the first implementation pass. After each validation loop, update the Validator line in that stub:
 
 ```markdown
 ## Token Usage

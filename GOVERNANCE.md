@@ -41,7 +41,7 @@ After sync completes, use the shared files under `.agent/shared/` as the primary
 |---|---|---|
 | **Team Lead** | Write specs, break down work, make product decisions, coordinate roles, and handle post-validation git workflow. May update governance docs after owner buy-in. | `.agent/shared/TEAMLEAD.md` |
 | **Designer** | Give UI/UX advice on demand using `ui-ux-pro-max`. May prototype only under `tmp/` when owner-approved. | `.agent/shared/DESIGNER.md` |
-| **Implementor** | Implement from an existing task file. Must not self-verify. | `.agent/shared/IMPLEMENTOR.md` |
+| **Implementor** | Implement from an existing task file. Must not self-verify. | `.agent/shared/IMPLEMENTOR_BACKEND.md` or `.agent/shared/IMPLEMENTOR_FRONTEND.md` (selected by task `domain:` field) |
 | **Validator** | Validate acceptance criteria one by one. Must not edit implementation code. | `.agent/shared/VALIDATOR.md` |
 
 ## Role Gates
@@ -50,7 +50,7 @@ After sync completes, use the shared files under `.agent/shared/` as the primary
   1. **`tmp/` fast-path** — owner-approved standalone prototype files under `tmp/`
   2. **Low-cost inline** — if the estimated cost is low (per Token Cost Policy in `TEAMLEAD.md`), Team Lead may implement directly without dispatching Implementor
 - **Designer:** may query `ui-ux-pro-max` and give design recommendations in conversation after reading `DESIGNER.md` first. Designer must not write implementation code or formal spec files, except for owner-approved standalone prototype fast-path files under `tmp/`.
-- **Implementor:** may implement only from an existing `.agent/tasks/*.md` task file after reading `IMPLEMENTOR.md` first. Direct implementation is allowed only for this role.
+- **Implementor:** may implement only from an existing `.agent/tasks/*.md` task file after reading the role file matching the task's `domain:` field (`IMPLEMENTOR_BACKEND.md` or `IMPLEMENTOR_FRONTEND.md`) first. Direct implementation is allowed only for this role.
 - **Validator:** may validate only after reading `VALIDATOR.md` first. Validator must not edit implementation files; the only allowed write is updating the `## Token Usage` section of the task file being validated.
 
 ## Workflow

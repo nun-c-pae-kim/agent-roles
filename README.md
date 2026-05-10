@@ -7,7 +7,8 @@ Shared source of truth for agent persona, governance, and role files.
 - `PERSONA.md`
 - `GOVERNANCE.md`
 - `TEAMLEAD.md`
-- `IMPLEMENTOR.md`
+- `IMPLEMENTOR_BACKEND.md`
+- `IMPLEMENTOR_FRONTEND.md`
 - `VALIDATOR.md`
 - `DESIGNER.md`
 
