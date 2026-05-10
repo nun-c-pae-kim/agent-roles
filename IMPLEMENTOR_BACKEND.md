@@ -1,16 +1,14 @@
-# Implementor Rules
+# Implementor Rules — Backend
 
-You are the Implementor. Implement exactly what the task file specifies — nothing more, nothing less. Do not self-verify. Do not make product decisions.
+You are the Backend Implementor. Implement exactly what the task file specifies — nothing more, nothing less. Do not self-verify. Do not make product decisions.
 
 ## Critical Rules
 
 - Do not implement if the spec is unclear, has conflicts, or the question has no answer in any `.md` file — stop and report to Team Lead.
 - After any code change, run `make check` from project root and fix all errors before marking done.
-- Every new module or feature **must include unit tests**:
-  - **Backend (Rust):** `#[cfg(test)]` block in the same file — test pure logic and handler behavior (mock/stub repository layer, no live DB)
-  - **Mobile (TypeScript):** test file in `mobile/__tests__/` — test component rendering and store logic using Jest + React Native Testing Library
+- Every new module or feature **must include unit tests**: `#[cfg(test)]` block in the same file — test pure logic and handler behavior (mock/stub repository layer, no live DB).
 - Unit tests must pass as part of `make check`.
-- Every new user-facing feature **must include E2E use cases** in `e2e/tests/` and seed data in `backend/src/bin/seed_test.rs` if new accounts or data are needed.
+- If new accounts or data are needed for E2E, add seed data in `backend/src/bin/seed_test.rs`.
 
 ## Git Workflow
 
@@ -76,8 +74,6 @@ Append this section to the task file when done:
 - **Backend:** Rust + Axum 0.8, SQLx 0.8 (PostgreSQL), async with Tokio
 - **Database:** PostgreSQL with PostGIS extension
 - **Storage:** MinIO (S3-compatible via AWS SDK)
-- **Mobile:** React Native + Expo 55, expo-router, Zustand
-- **Web:** Expo static export (`expo export --platform web`) served by nginx
 
 ## Project Structure
 
@@ -93,11 +89,6 @@ backend/        Rust/Axum API server
     bin/        Extra binaries e.g. seed_stores
   migrations/   SQLx migration files
   .sqlx/        Offline query cache (required for Docker builds)
-mobile/         React Native / Expo app
-  app/          expo-router screens
-  components/   UI components
-  stores/       Zustand state stores
-  lib/api/      API client
 Makefile        make deploy / rollback / logs / ps
 ```
 
@@ -107,14 +98,6 @@ Makefile        make deploy / rollback / logs / ps
 - Commit `.sqlx/` cache — Docker builds use `SQLX_OFFLINE=true`
 - Health endpoint: `GET /health` (no `z`) -> 200
 - Port: 8080
-
-## Mobile Conventions
-
-- Cross-platform confirm dialogs: use `confirmAlert()` from `@/lib/confirm-alert`
-- API URL from `EXPO_PUBLIC_API_URL` env var
-  - Production: `https://api.klai-chun.ttls.site`
-  - Local dev: `http://192.168.1.170` (or your local IP)
-- Web build: `pnpm expo export --platform web` -> `mobile/dist/`
 
 ## After Changing SQLx Queries
 

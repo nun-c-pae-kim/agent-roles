@@ -17,6 +17,14 @@ Exceptions:
 1. **`tmp/` fast-path** — owner-approved standalone prototype files under `tmp/`
 2. **Low-cost inline** — if the estimated cost is low (1-2 files, no cross-cutting impact), Team Lead may implement directly without writing a task file or dispatching Implementor; still must run `make check` after. **Before touching any file, summarize in 1-2 sentences: which files will change and what will change. Proceed only after owner does not object or explicitly approves.**
 
+Low-cost inline does **not** include runtime mutation such as:
+- `docker compose up/down/restart`
+- recreating or dropping databases
+- changing infra entrypoints, ports, or active stack selection
+- broad recovery/debugging across environment boundaries
+
+Those require explicit source-of-truth confirmation first and are never "low-cost" just because the code diff is small.
+
 ## Session Start
 
 Follow repo-local `AGENTS.md` bootstrap rules first, then shared `GOVERNANCE.md`. A confirmed role persists for the current conversation/session; do not ask again unless the owner explicitly changes role or the role context is lost/ambiguous after resume or compaction. If the owner explicitly changes role, the latest explicit owner role selection wins.
@@ -44,6 +52,38 @@ Before starting any task that requires reading 3+ files or multi-step reasoning:
 3. If **medium** or **high** — follow the role workflow instead of proceeding inline
 4. Implementation requires the **Implementor** role and an existing `.agent/tasks/*.md` task file
 5. Rule of thumb: implementation tasks spanning multiple screens/modules = high cost -> delegate
+
+## Runtime Source-of-Truth Rule
+
+Before any recovery, debugging, or test-environment work that could touch infra/runtime state, Team Lead must identify and state the active source of truth:
+1. which command/path the owner actually uses
+2. which runtime stack or service is already running
+3. which file or config is authoritative for this session
+
+If handoff notes, old task files, or repo defaults conflict with the owner's current workflow, the owner's current workflow wins unless the owner explicitly says otherwise.
+
+## Existing Runtime First Rule
+
+When a runtime or test stack is already running, Team Lead must prefer inspecting and using the existing runtime before creating, recreating, replacing, or parallelizing stacks.
+
+Default order:
+1. inspect the currently running service
+2. confirm the actual command and config path in use
+3. reuse the existing runtime if it can answer the question
+4. only then consider starting or recreating infra
+
+Do not assume the dedicated `test` file, default port, or repo-local convenience command is the active path without confirmation.
+
+## No Stack Mutation Before Confirmation Rule
+
+Team Lead must not start, stop, recreate, or replace infra/runtime stacks until the source of truth is confirmed.
+
+Examples:
+- do not run `docker compose up/down` just because a `docker-compose.test.yml` exists
+- do not recreate databases until the active DB target is confirmed
+- do not switch from an owner-run stack to a repo-default stack without owner approval or an explicit repo rule
+
+If multiple plausible runtime paths exist, stop and narrow the question before mutating anything.
 
 ## Finish-To-Closure Rule
 
@@ -94,6 +134,7 @@ Team Lead must treat that as the **critical path** and continue until closure.
 
 Do not open broad new explorations at this stage.
 Do not pause at "almost done".
+Do not mutate runtime stacks in the final mile unless the active stack has already been confirmed under the runtime rules above.
 
 ## Blocker Narrowing Rule
 
@@ -122,18 +163,21 @@ Never leave the task in an ambiguous in-progress state when the blocker is alrea
 - **Task file is mandatory** — never dispatch via a long prompt. A prompt longer than 3 sentences is a sign something is wrong.
 - Keep dispatch prompts short — point to the task file only.
 - **Each task must run in its own git worktree** — never dispatch multiple tasks into the same working directory.
+- Every task file must declare `domain: backend` or `domain: frontend` — use this to select the role file.
 
 ### Worktree Dispatch Pattern (required)
 
 ```bash
 TASK="[task-name]"
+DOMAIN="[backend|frontend]"  # read from task file's `domain:` field
+ROLE_FILE="IMPLEMENTOR_BACKEND.md"   # or IMPLEMENTOR_FRONTEND.md
 BRANCH="feat/$TASK"
 WORKTREE="/tmp/klai-chun-$TASK"
 
 git worktree add "$WORKTREE" -b "$BRANCH"
 cd "$WORKTREE" && codex exec --model gpt-5.4-mini \
   --dangerously-bypass-approvals-and-sandbox \
-  "Role: Implementor. Read .agent/roles/IMPLEMENTOR.md first, then implement .agent/tasks/$TASK.md exactly."
+  "Role: Implementor. Read .agent/roles/$ROLE_FILE first, then implement .agent/tasks/$TASK.md exactly."
 git worktree remove "$WORKTREE"
 ```
 
@@ -165,10 +209,11 @@ Team Lead handles only escalated merge conflicts:
 ## Definition of Done
 
 A phase is not done until E2E tests pass:
-1. Ask the **project owner** to run: `make test-e2e-report`
-2. Owner shares `e2e/test-results/results.json`
-3. 0 failures -> merge to `main`, proceed
-4. Failures -> Implementor fixes from `results.json`, owner runs again — repeat
+1. Use the repo's confirmed E2E workflow for this session
+2. If the repo-local rules explicitly assign E2E execution to the owner, ask the owner to run it and share the result
+3. Otherwise, Team Lead or Implementor may run the confirmed E2E command directly
+4. 0 failures -> merge to `main`, proceed
+5. Failures -> fix from `results.json` or equivalent output, then rerun through the same confirmed workflow
 
 ## Escalation Conditions
 
