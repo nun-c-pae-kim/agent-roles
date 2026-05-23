@@ -31,6 +31,8 @@ Follow repo-local `AGENTS.md` bootstrap rules first, then shared `GOVERNANCE.md`
 
 After the role is confirmed as Team Lead, declare Team Lead constraints before proceeding.
 
+For task dispatches, the parent repo is the bootstrap source of truth for the session. Sync shared policy there first, then create worktrees from that clean synced state; do not re-bootstrap an in-progress dirty task worktree unless shared policy truly needs refreshing.
+
 ## Decision Rule
 
 **ก่อนตัดสินใจอะไรก็ตามที่กระทบ project standard หรือต้องการ owner buy-in — ถามก่อนเสมอ**
@@ -50,7 +52,7 @@ Before starting any task that requires reading 3+ files or multi-step reasoning:
 1. State the expected cost: **low** / **medium** / **high**
 2. Reading 3+ files, modifying code, running tests, debugging, merging, pushing, or releasing is at least **medium** cost
 3. If **medium** or **high** — follow the role workflow instead of proceeding inline
-4. Implementation requires the **Implementor** role and an existing `.agent/tasks/*.md` task file
+4. Implementation requires the **Implementor** role and an existing `.agent/tasks/` task file in `.md` or `.html`
 5. Rule of thumb: implementation tasks spanning multiple screens/modules = high cost -> delegate
 
 ## Runtime Source-of-Truth Rule
@@ -150,23 +152,29 @@ Never leave the task in an ambiguous in-progress state when the blocker is alrea
 
 ## Dispatch Model Policy
 
-- Default Implementor: **Codex CLI** — use for every task
-- Default Implementor model: `gpt-5.4-mini` for scoped implementation tasks with clear task files
+- **Frontend tasks** → before dispatching, ask the owner: "จะใช้ Codex หรือ Claude (new session) สำหรับ task นี้?"
+- **Frontend tasks (pure UI, no logic)** → default to **Claude Code (new session)** unless the owner says otherwise
+- **Backend tasks** → default Implementor: **Codex CLI**
+- Default Codex model: `gpt-5.4-mini` for scoped implementation tasks with clear task files
 - Use `gpt-5.4` instead when the task is high-risk, cross-cutting, architecture-heavy, security-sensitive, or has ambiguous acceptance criteria
 - Default Designer model: `gpt-5.4` for prototype work, UI critique, and visual-direction decisions
 - Validator model: prefer `gpt-5.4` for complex implementation validation; `gpt-5.4-mini` is acceptable for docs-only or narrow low-risk validation
-- Claude reserved for planning, spec, and task breakdown only
 
 ## Dispatching Implementor
 
 - **Task file is mandatory** — never dispatch via a long prompt. A prompt longer than 3 sentences is a sign something is wrong.
 - Keep dispatch prompts short — point to the task file only.
 - **Each task must run in its own git worktree** — never dispatch multiple tasks into the same working directory.
-- Every task file must declare `domain: backend` or `domain: frontend` — use this to select the role file.
+- Every task file must declare `domain: backend` or `domain: frontend` — use this to select the role file. For `.md`, use a metadata line near the top. For `.html`, include the same text as visible body content near the top.
 
 ### Task File Required Fields
 
-Every `.agent/tasks/*.md` must begin with:
+Every task file under `.agent/tasks/` must expose these fields near the top of the document:
+
+1. task ID and short title
+2. `domain: backend` or `domain: frontend`
+
+Markdown example:
 
 ```markdown
 # [task-id] [Short Title]
@@ -174,23 +182,47 @@ Every `.agent/tasks/*.md` must begin with:
 domain: backend   # or: frontend
 ```
 
+HTML example:
+
+```html
+<h1>[task-id] [Short Title]</h1>
+<p>domain: backend</p>
+```
+
 The `domain:` field is what selects `IMPLEMENTOR_BACKEND.md` vs `IMPLEMENTOR_FRONTEND.md` at dispatch time.
 
 ### Worktree Dispatch Pattern (required)
 
+**Backend tasks (domain: backend) — Codex CLI:**
+
 ```bash
 TASK="[task-name]"
-DOMAIN="[backend|frontend]"  # read from task file's `domain:` field
-ROLE_FILE="IMPLEMENTOR_${DOMAIN^^}.md"
 BRANCH="feat/$TASK"
 WORKTREE="/tmp/klai-chun-$TASK"
 
 git worktree add "$WORKTREE" -b "$BRANCH"
 cd "$WORKTREE" && codex exec --model gpt-5.4-mini \
   --dangerously-bypass-approvals-and-sandbox \
-  "Role: Implementor. Read .agent/roles/$ROLE_FILE first, then implement .agent/tasks/$TASK.md exactly."
+  "Role: Implementor. Read .agent/shared/IMPLEMENTOR_BACKEND.md first, then implement the matching .agent/tasks/$TASK task file (.md or .html) exactly."
 git worktree remove "$WORKTREE"
 ```
+
+**Frontend tasks (domain: frontend) — Claude Code (new session):**
+
+1. Create a worktree and branch from the parent repo:
+   ```bash
+   TASK="[task-name]"
+   git worktree add "/tmp/klai-chun-$TASK" -b "feat/$TASK"
+   ```
+2. Open a new Claude Code session pointed at the worktree path
+3. Dispatch prompt (keep it short — task file is the source of truth):
+   > "Role: Frontend Implementor. Read `.agent/shared/IMPLEMENTOR_FRONTEND.md` first, then implement the matching `.agent/tasks/[TASK]` task file (`.md` or `.html`) exactly."
+
+Bootstrapping note:
+- run shared-policy sync in the parent repo before `git worktree add`
+- create the worktree from that clean synced parent repo
+- treat the new worktree as already bootstrapped for the task
+- do not re-run subtree sync inside the same dirty task worktree unless upstream shared policy changed and a refresh is required
 
 **Dispatch Implementor immediately** when the project owner gives go-ahead — do not ask the owner to do it.
 

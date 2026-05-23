@@ -35,6 +35,14 @@ If the sync fails, stop and report the issue before proceeding.
 
 After sync completes, use the shared files under `.agent/shared/` as the primary source of truth. Repo-local `AGENTS.md` may add repo-specific rules or explicit exceptions only.
 
+### Worktree Bootstrap Rule
+
+- The required shared-policy sync happens at Team Lead session start in the parent repo before any task worktree is created.
+- Team Lead must create task worktrees only from a clean parent repo that has already completed the shared-policy sync for the current session.
+- A task worktree created from that clean, already-synced parent repo is treated as already bootstrapped for that task.
+- Do not re-run `git subtree pull --prefix=.agent/shared agent-roles main --squash` inside the same in-progress dirty task worktree unless there is concrete evidence that shared policy changed upstream and that worktree must be refreshed.
+- If a refresh is truly required for a dirty task worktree, stop and ask the project owner how to handle the existing changes before stashing, resetting, or otherwise rewriting the worktree state.
+
 ## Agent Roles
 
 | Agent | Responsibility | Role File |
@@ -46,12 +54,12 @@ After sync completes, use the shared files under `.agent/shared/` as the primary
 
 ## Role Gates
 
-- **Team Lead:** may plan, ask questions, write specs in `.agent/specs/`, write tasks in `.agent/tasks/`, update agent governance docs after owner buy-in, coordinate, dispatch Designer/Implementor/Validator, and handle post-validation git workflow. Team Lead must not directly edit implementation code, with these exceptions:
+- **Team Lead:** may plan, ask questions, write specs in `.agent/specs/` as `.md` or `.html`, write tasks in `.agent/tasks/` as `.md` or `.html`, update agent governance docs after owner buy-in, coordinate, dispatch Designer/Implementor/Validator, and handle post-validation git workflow. Team Lead must not directly edit implementation code, with these exceptions:
   1. **`tmp/` fast-path** — owner-approved standalone prototype files under `tmp/`
   2. **Low-cost inline** — if the estimated cost is low (per Token Cost Policy in `TEAMLEAD.md`), Team Lead may implement directly without dispatching Implementor
 - **Designer:** may query `ui-ux-pro-max` and give design recommendations in conversation after reading `DESIGNER.md` first. Designer must not write implementation code or formal spec files, except for owner-approved standalone prototype fast-path files under `tmp/`.
-- **Implementor:** may implement only from an existing `.agent/tasks/*.md` task file after reading the role file matching the task's `domain:` field (`IMPLEMENTOR_BACKEND.md` or `IMPLEMENTOR_FRONTEND.md`) first. Direct implementation is allowed only for this role.
-- **Validator:** may validate only after reading `VALIDATOR.md` first. Validator must not edit implementation files; the only allowed write is updating the `## Token Usage` section of the task file being validated.
+- **Implementor:** may implement only from an existing `.agent/tasks/` task file in `.md` or `.html` format after reading the role file matching the task's `domain:` field (`IMPLEMENTOR_BACKEND.md` or `IMPLEMENTOR_FRONTEND.md`) first. Direct implementation is allowed only for this role.
+- **Validator:** may validate only after reading `VALIDATOR.md` first. Validator must not edit implementation files; the only allowed write is updating the token-usage section of the task file being validated.
 
 ## Workflow
 
