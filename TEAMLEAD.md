@@ -155,10 +155,10 @@ Never leave the task in an ambiguous in-progress state when the blocker is alrea
 - **Frontend tasks** → before dispatching, ask the owner: "จะใช้ Codex หรือ Claude (new session) สำหรับ task นี้?"
 - **Frontend tasks (pure UI, no logic)** → default to **Claude Code (new session)** unless the owner says otherwise
 - **Backend tasks** → default Implementor: **Codex CLI**
-- Default Codex model: `gpt-5.4-mini` for scoped implementation tasks with clear task files
-- Use `gpt-5.4` instead when the task is high-risk, cross-cutting, architecture-heavy, security-sensitive, or has ambiguous acceptance criteria
+- Default Codex model: `gpt-5.4` for scoped implementation tasks with clear task files
+- Use `gpt-5.5` instead when the task is high-risk, cross-cutting, architecture-heavy, security-sensitive, or has ambiguous acceptance criteria
 - Default Designer model: `gpt-5.4` for prototype work, UI critique, and visual-direction decisions
-- Validator model: prefer `gpt-5.4` for complex implementation validation; `gpt-5.4-mini` is acceptable for docs-only or narrow low-risk validation
+- Validator model: `gpt-5.4` by default; escalate to `gpt-5.5` only for complex, high-risk implementation validation
 
 ## Dispatching Implementor
 
@@ -201,7 +201,7 @@ BRANCH="feat/$TASK"
 WORKTREE="/tmp/klai-chun-$TASK"
 
 git worktree add "$WORKTREE" -b "$BRANCH"
-cd "$WORKTREE" && codex exec --model gpt-5.4-mini \
+cd "$WORKTREE" && codex exec --model gpt-5.4 \
   --dangerously-bypass-approvals-and-sandbox \
   "Role: Implementor. Read .agent/shared/IMPLEMENTOR_BACKEND.md first, then implement the matching .agent/tasks/$TASK task file (.md or .html) exactly."
 git worktree remove "$WORKTREE"
