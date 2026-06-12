@@ -174,6 +174,15 @@ Every task file under `.agent/tasks/` must expose these fields near the top of t
 1. task ID and short title
 2. `domain: backend` or `domain: frontend`
 
+### Frontend Task Files — UI Reference Rule
+
+**ห้ามอธิบาย UI ในตัวหนังสือ** สำหรับ `domain: frontend` tasks ที่มี UI เปลี่ยนแปลง
+
+- ต้องมี **Design Reference** section ที่ชี้ไปยัง prototype file (เช่น `tmp/order-detail-v2-prototype.html`) เสมอ
+- ระบุเพียงว่า "implement ให้เหมือน prototype นี้" — ไม่ต้องอธิบาย layout, colors, spacing, หรือ component structure ซ้ำในตัวหนังสือ
+- Acceptance Criteria ให้ระบุว่า "Layout ตรงกับ prototype" แทนการ describe แต่ละ element
+- ถ้ายังไม่มี prototype → ให้ปรึกษา Designer ก่อนเขียน task file (ตาม UI change rule)
+
 Markdown example:
 
 ```markdown
